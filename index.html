@@ -1576,6 +1576,12 @@
         document.getElementById('music-btn').style.display = 'flex';
       }, 700);
 
+      // Bless background music for iOS Safari autoplay
+      music.play().then(() => {
+        music.pause();
+        music.currentTime = 0;
+      }).catch(() => { });
+
       // Play hero video unmuted for the first 10 seconds
       const heroVideo = document.getElementById('heroVideo');
       if (heroVideo) {
