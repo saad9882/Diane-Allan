@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Diane & Allan — Wedding Invitation</title>
+  <title>Allan &amp; Diane — Wedding Invitation</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -1132,6 +1132,44 @@
     .footer-credit a:hover {
       color: var(--rose-deep);
     }
+
+    /* ── VIDEO PLAY/PAUSE BUTTON ── */
+    .video-btn {
+      position: absolute;
+      bottom: clamp(10px, 2.5vw, 20px);
+      right: clamp(10px, 2.5vw, 20px);
+      z-index: 100;
+      width: clamp(38px, 9vw, 48px);
+      height: clamp(38px, 9vw, 48px);
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.22);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+      color: #ffffff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .video-btn:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .video-btn:active {
+      transform: scale(0.95);
+    }
+
+    .video-btn svg {
+      width: 50%;
+      height: 50%;
+      fill: currentColor;
+    }
   </style>
 </head>
 
@@ -1175,15 +1213,25 @@
         <!-- Intro text ABOVE the video -->
         <div class="hero-intro-text">
           <p class="hero-invited-text">You are invited to the wedding of</p>
-          <h1 class="hero-names-text">Diane Belony &amp; Allan Savary</h1>
+          <h1 class="hero-names-text">Allan Savary &amp; Diane Belony</h1>
         </div>
 
         <div class="hero-video-container">
-          <video id="heroVideo" autoplay muted loop playsinline>
+          <video id="heroVideo" autoplay muted playsinline>
             <source src="couple.mp4" type="video/mp4" />
           </video>
           <!-- Video overlay is kept for style (tint/shadow) but has no text inside -->
           <div class="hero-video-overlay"></div>
+          <!-- Floating Play/Pause Control Button (hidden initially) -->
+          <button id="video-control-btn" class="video-btn" onclick="toggleHeroVideo()" style="display: none;"
+            title="Play / Pause Video">
+            <svg id="video-icon-play" viewBox="0 0 24 24" style="display: none;">
+              <path d="M8 5v14l11-7z" fill="currentColor" />
+            </svg>
+            <svg id="video-icon-pause" viewBox="0 0 24 24" style="display: block;">
+              <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor" />
+            </svg>
+          </button>
         </div>
 
         <!-- Details text BELOW the video -->
@@ -1402,7 +1450,7 @@
       <div class="luxury-card reveal d3" style="text-align:center;max-width:420px;">
         <img src="black_tie.png" alt="Black Tie" class="dc-img" />
         <div class="dc-text">Cocktail Attire</div>
-        <p class="dc-sub">Cocktail attire of any kind and colour.</p>
+        <p class="dc-sub">Cocktail attire of any kind and color.</p>
       </div>
     </section>
 
@@ -1453,7 +1501,7 @@
       <div class="sec-rule reveal d2">
         <div class="sec-rule-dot"></div>
       </div>
-      <p class="sec-sub reveal d3" style="margin-bottom:32px;">Please respond by July 1st 2026</p>
+      <p class="sec-sub reveal d3" style="margin-bottom:32px;">Please respond by July 31st 2026</p>
       <div class="luxury-card reveal d4"
         style="max-width: 500px; margin: 0 auto; text-align: left; position: relative;">
         <!-- RSVP Form -->
@@ -1521,8 +1569,8 @@
         <span>
           With all our love<br />
           <em
-            style="font-family:'Maryellen',cursive;font-size:2em;color:var(--rose-deep);font-style:normal;line-height:1.2;display:block;">Diane
-            &amp; Allan</em>
+            style="font-family:'Maryellen',cursive;font-size:2em;color:var(--rose-deep);font-style:normal;line-height:1.2;display:block;">Allan
+            &amp; Diane</em>
           <span
             style="font-family:'Jost',sans-serif;font-weight:200;font-size:10px;letter-spacing:0.4em;color:var(--ink-light);text-transform:uppercase;">22
             August 2026</span>
@@ -1761,6 +1809,57 @@
       tick();
       setInterval(tick, 1000);
     })();
+
+    // ── HERO VIDEO CONTROLS & ALIGNMENT ──
+    const heroVid = document.getElementById('heroVideo');
+    if (heroVid) {
+      // Handle first completion
+      heroVid.addEventListener('ended', () => {
+        const btn = document.getElementById('video-control-btn');
+        if (btn) {
+          btn.style.display = 'flex';
+        }
+        document.getElementById('video-icon-play').style.display = 'block';
+        document.getElementById('video-icon-pause').style.display = 'none';
+
+        // Keep background music aligned (resume playing if it was active)
+        if (musicPlaying) {
+          music.play().catch(() => { });
+        }
+      });
+    }
+
+    function toggleHeroVideo() {
+      const heroVid = document.getElementById('heroVideo');
+      const playIcon = document.getElementById('video-icon-play');
+      const pauseIcon = document.getElementById('video-icon-pause');
+      if (!heroVid) return;
+
+      if (heroVid.paused || heroVid.ended) {
+        // Play video
+        heroVid.muted = false; // Unmute to hear audio
+
+        // Temporarily pause background music so video audio is clear
+        if (musicPlaying) {
+          music.pause();
+        }
+
+        heroVid.play().then(() => {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        }).catch(() => { });
+      } else {
+        // Pause video
+        heroVid.pause();
+        playIcon.style.display = 'block';
+        pauseIcon.style.display = 'none';
+
+        // Resume background music
+        if (musicPlaying) {
+          music.play().catch(() => { });
+        }
+      }
+    }
   </script>
 </body>
 
