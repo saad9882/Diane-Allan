@@ -1106,42 +1106,31 @@
     }
 
     .footer-credit {
-      margin-top: 32px;
+      margin-top: 40px;
       font-family: 'Jost', sans-serif;
-      font-size: 11px;
-      letter-spacing: 0.12em;
+      font-size: 9px;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--ink-light);
+      opacity: 0.35;
+      transition: opacity 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+    }
+
+    .footer-credit:hover {
+      opacity: 0.8;
     }
 
     .footer-credit a {
-      color: var(--rose-deep);
+      color: var(--ink-light);
       text-decoration: none;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      transition: color 0.3s ease, transform 0.3s ease;
-      border-bottom: 1px solid transparent;
-      padding-bottom: 2px;
+      font-weight: 300;
+      transition: color 0.3s ease;
     }
 
     .footer-credit a:hover {
-      color: var(--rose);
-      border-color: var(--rose-pale);
-      transform: translateY(-1px);
-    }
-
-    .footer-credit svg {
-      width: 14px;
-      height: 14px;
-      stroke-width: 2.0px;
-      display: inline-block;
-      vertical-align: middle;
+      color: var(--rose-deep);
     }
   </style>
 </head>
@@ -1190,7 +1179,7 @@
         </div>
 
         <div class="hero-video-container">
-          <video autoplay muted loop playsinline>
+          <video id="heroVideo" autoplay muted loop playsinline>
             <source src="couple.mp4" type="video/mp4" />
           </video>
           <!-- Video overlay is kept for style (tint/shadow) but has no text inside -->
@@ -1464,7 +1453,7 @@
       <div class="sec-rule reveal d2">
         <div class="sec-rule-dot"></div>
       </div>
-      <p class="sec-sub reveal d3" style="margin-bottom:32px;">Please respond by July 31st 2026</p>
+      <p class="sec-sub reveal d3" style="margin-bottom:32px;">Please respond by July 1st 2026</p>
       <div class="luxury-card reveal d4"
         style="max-width: 500px; margin: 0 auto; text-align: left; position: relative;">
         <!-- RSVP Form -->
@@ -1540,16 +1529,7 @@
         </span>
       </div>
       <div class="footer-credit reveal d2">
-        Made with love with
-        <a href="https://instagram.com/weddingbyawff" target="_blank" rel="noopener">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
-            stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="5" />
-            <circle cx="12" cy="12" r="4" />
-            <circle cx="17.2" cy="6.8" r="0.6" fill="currentColor" stroke="none" />
-          </svg>
-          AWF Digitals
-        </a>
+        <a href="https://instagram.com/weddingbyawff" target="_blank" rel="noopener">by AWF Digitals</a>
       </div>
     </footer>
 
@@ -1595,7 +1575,25 @@
         document.body.classList.remove('splash-active');
         document.getElementById('music-btn').style.display = 'flex';
       }, 700);
-      startMusic();
+
+      // Play hero video unmuted for the first 10 seconds
+      const heroVideo = document.getElementById('heroVideo');
+      if (heroVideo) {
+        heroVideo.muted = false;
+        heroVideo.currentTime = 0;
+        heroVideo.play().catch(() => {});
+
+        const checkAudio = () => {
+          if (heroVideo.currentTime >= 8) {
+            heroVideo.muted = true;
+            heroVideo.removeEventListener('timeupdate', checkAudio);
+            startMusic();
+          }
+        };
+        heroVideo.addEventListener('timeupdate', checkAudio);
+      } else {
+        startMusic();
+      }
     }
     function startVid() {
       if (playing) {
@@ -1628,6 +1626,10 @@
     }
 
     function startMusic() {
+      const heroVideo = document.getElementById('heroVideo');
+      if (heroVideo) {
+        heroVideo.muted = true;
+      }
       music.volume = 0.28;
       music.play().then(() => {
         musicPlaying = true;
@@ -1636,6 +1638,10 @@
     }
 
     function toggleMusic() {
+      const heroVideo = document.getElementById('heroVideo');
+      if (heroVideo) {
+        heroVideo.muted = true;
+      }
       if (musicPlaying) {
         music.pause(); musicPlaying = false;
         updateMusicUI();
