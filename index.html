@@ -1743,18 +1743,19 @@
           "Message": message
         })
       })
-        .then(response => {
+        .then(async response => {
           if (response.ok) {
             form.style.display = 'none';
             successDiv.style.display = 'block';
           } else {
-            alert('An error occurred. Please try again or contact us directly.');
+            const data = await response.json().catch(() => ({}));
+            alert('FormSubmit Error: ' + (data.message || `Status ${response.status}`));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalHtml;
           }
         })
-        .catch(() => {
-          alert('An error occurred. Please try again or contact us directly.');
+        .catch(err => {
+          alert('Network or Submission Error: ' + err.message);
           submitBtn.disabled = false;
           submitBtn.innerHTML = originalHtml;
         });
