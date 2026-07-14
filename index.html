@@ -1504,6 +1504,8 @@
         style="max-width: 500px; margin: 0 auto; text-align: left; position: relative;">
         <!-- RSVP Form -->
         <form id="rsvpForm" onsubmit="handleRsvpSubmit(event)">
+          <!-- Honeypot field for spam protection -->
+          <input type="text" name="_honey" style="display:none">
           <div class="form-group">
             <label class="form-label" for="rsvpName">Full Name</label>
             <input type="text" id="rsvpName" name="name" class="form-input" required placeholder="e.g. John Doe" />
@@ -1584,9 +1586,7 @@
   <script>
     // ── RSVP CONFIGURATION ──
     const RSVP_EMAIL = "cadoo59@live.com";
-    const RSVP_CC = "ranasaad988@gmail.com";
-    // Get your free Web3Forms Access Key from https://web3forms.com
-    const WEB3FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE"; 
+    const RSVP_CC = "ranasaad988@gmail.com"; 
 
     // Inject RSVP contact email into the DOM dynamically
     document.addEventListener("DOMContentLoaded", () => {
@@ -1718,6 +1718,7 @@
       const name = document.getElementById('rsvpName').value;
       const email = document.getElementById('rsvpEmail').value;
       const message = document.getElementById('rsvpMessage').value;
+      const honey = form.querySelector('input[name="_honey"]').value;
 
       // Disable submit button and show loading text
       submitBtn.disabled = true;
@@ -1726,29 +1727,20 @@
 
       const subject = `New RSVP Response from ${name}`;
 
-      // Fallback if the user hasn't configured Web3Forms Access Key yet
-      if (!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === "YOUR_ACCESS_KEY_HERE") {
-        alert("Web3Forms Access Key is not configured yet. Opening your email client to send the RSVP directly.");
-        window.location.href = `mailto:${RSVP_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nMessage: " + message)}`;
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalHtml;
-        return;
-      }
-
-      fetch("https://api.web3forms.com/submit", {
+      fetch(`https://formsubmit.co/ajax/${RSVP_EMAIL}`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          access_key: WEB3FORMS_ACCESS_KEY,
-          subject: subject,
-          from_name: name,
-          name: name,
-          email: email,
-          message: message,
-          ccemail: RSVP_CC // Automatically cc'd on Web3Forms Pro accounts
+          _captcha: "false", // Disable captcha to resolve slowness and random 400 errors
+          _subject: subject,
+          _cc: RSVP_CC,
+          _honey: honey,     // Silent spam protection
+          "Full Name": name,
+          "Email Address": email,
+          "Message": message
         })
       })
         .then(response => {
