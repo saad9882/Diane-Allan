@@ -1474,7 +1474,7 @@
       <div class="luxury-card reveal d3" style="text-align:center;max-width:460px;">
         <img src="gift.png" alt="Gift" class="gift-img" />
         <p class="gift-text" style="margin-bottom: 16px;">
-          Your presence is a blessing to us. If you feel led to give monetary contributions or Amazon gift cards toward our new beginning are gratefully appreciated.
+          Your presence is a blessing to us. If you feel led to give monetary contributions or Amazon gift cards toward our new beginning, they are gratefully appreciated.
         </p>
         <p class="gift-text">
           We are thankful for your love and support.
@@ -1585,6 +1585,8 @@
     // ── RSVP CONFIGURATION ──
     const RSVP_EMAIL = "cadoo59@live.com";
     const RSVP_CC = "ranasaad988@gmail.com";
+    // Get your free Web3Forms Access Key from https://web3forms.com
+    const WEB3FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE"; 
 
     // Inject RSVP contact email into the DOM dynamically
     document.addEventListener("DOMContentLoaded", () => {
@@ -1724,18 +1726,29 @@
 
       const subject = `New RSVP Response from ${name}`;
 
-      fetch(`https://formsubmit.co/ajax/${RSVP_EMAIL}`, {
+      // Fallback if the user hasn't configured Web3Forms Access Key yet
+      if (!WEB3FORMS_ACCESS_KEY || WEB3FORMS_ACCESS_KEY === "YOUR_ACCESS_KEY_HERE") {
+        alert("Web3Forms Access Key is not configured yet. Opening your email client to send the RSVP directly.");
+        window.location.href = `mailto:${RSVP_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nMessage: " + message)}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+        return;
+      }
+
+      fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          _subject: subject,
-          _cc: RSVP_CC,
-          "Full Name": name,
-          "Email Address": email,
-          "Message": message
+          access_key: WEB3FORMS_ACCESS_KEY,
+          subject: subject,
+          from_name: name,
+          name: name,
+          email: email,
+          message: message,
+          ccemail: RSVP_CC // Automatically cc'd on Web3Forms Pro accounts
         })
       })
         .then(response => {
