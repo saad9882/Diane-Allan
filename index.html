@@ -1586,7 +1586,7 @@
   <script>
     // ── RSVP CONFIGURATION ──
     const RSVP_EMAIL = "cadoo59@live.com";
-    const RSVP_CC = "ranasaad988@gmail.com"; 
+    const WEB3FORMS_ACCESS_KEY = "1d127da8-2349-487e-bb6e-f65d70dbc1f6"; 
 
     // Inject RSVP contact email into the DOM dynamically
     document.addEventListener("DOMContentLoaded", () => {
@@ -1727,29 +1727,44 @@
 
       const subject = `New RSVP Response from ${name}`;
 
-      fetch(`https://formsubmit.co/ajax/${RSVP_EMAIL}`, {
+      // Silent honeypot spam filter check
+      if (honey) {
+        form.style.display = 'none';
+        successDiv.style.display = 'block';
+        return;
+      }
+
+      // Fallback if the access key is missing
+      if (!WEB3FORMS_ACCESS_KEY) {
+        alert("Web3Forms access key is not configured yet. Opening your email client to send the RSVP directly.");
+        window.location.href = `mailto:${RSVP_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent("Name: " + name + "\nEmail: " + email + "\nMessage: " + message)}`;
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHtml;
+        return;
+      }
+
+      fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          _captcha: "false", // Disable captcha to resolve slowness and random 400 errors
-          _subject: subject,
-          _cc: RSVP_CC,
-          _honey: honey,     // Silent spam protection
-          "Full Name": name,
-          "Email Address": email,
-          "Message": message
+          access_key: WEB3FORMS_ACCESS_KEY,
+          name: name,
+          email: email,
+          message: message,
+          subject: subject,
+          from_name: "Allan & Diane Wedding RSVP"
         })
       })
         .then(async response => {
-          if (response.ok) {
+          const data = await response.json().catch(() => ({}));
+          if (response.ok && data.success) {
             form.style.display = 'none';
             successDiv.style.display = 'block';
           } else {
-            const data = await response.json().catch(() => ({}));
-            alert('FormSubmit Error: ' + (data.message || `Status ${response.status}`));
+            alert('Submission Error: ' + (data.message || `Status ${response.status}`));
             submitBtn.disabled = false;
             submitBtn.innerHTML = originalHtml;
           }
